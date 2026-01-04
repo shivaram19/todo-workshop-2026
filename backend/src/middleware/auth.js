@@ -22,13 +22,13 @@ export const authenticateToken = (req, res, next) => {
   // Format expected: "Bearer <token>"
   // Example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   const authHeader = req.headers['authorization'];
-
+  console.log(authHeader);
   // Extract token from "Bearer <token>" format
   // authHeader?.split(' ') splits "Bearer token" into ["Bearer", "token"]
   // [1] gets the second element (the actual token)
   // If authHeader is undefined/null, token will be undefined
   const token = authHeader && authHeader.split(' ')[1];
-
+  console.log(token)
   // If no token provided, user is not authenticated
   // Return 401 Unauthorized status
   if (!token) {
@@ -47,6 +47,7 @@ export const authenticateToken = (req, res, next) => {
   // - To verify: recreate signature using header + payload + secret
   // - If recreated signature matches provided signature, token is valid
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    console.log(decoded);
     // If verification fails (invalid signature, expired, malformed)
     if (err) {
       return res.status(403).json({ error: 'Invalid or expired token' });
