@@ -1,0 +1,76 @@
+// Prisma Schema Definition
+// This file defines the data models and their relationships for our application
+// Prisma will use this to generate the database schema and type-safe client
+
+// Generator Configuration
+// This tells Prisma to generate a JavaScript/TypeScript client for database operations
+// The client provides type-safe methods to interact with the database
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Datasource Configuration
+// Defines which database we're using (PostgreSQL) and how to connect to it
+// The connection URL is stored in .env file for security
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model
+// Represents a user in our application who can create and manage todos
+// Each field maps to a column in the 'users' table in PostgreSQL
+model User {
+  // @id: Marks this as the primary key (unique identifier for each user)
+  // @default(autoincrement()): Automatically generates incrementing numbers (1, 2, 3...)
+  id       Int      @id @default(autoincrement())
+
+  // @unique: Ensures no two users can have the same email (enforced at database level)
+  email    String   @unique
+
+  // Stores the hashed password (never store plain text passwords!)
+  // We use bcrypt to hash passwords before storing them
+  password String
+
+  // @default(now()): Automatically sets to current timestamp when user is created
+  // Useful for tracking when accounts were created
+  createdAt DateTime @default(now())
+
+  // @updatedAt: Prisma automatically updates this whenever the user record changes
+  // Useful for tracking last modification time
+  updatedAt DateTime @updatedAt
+
+  // Relationship: One user can have many todos
+  // This creates a one-to-many relationship between User and Todo
+  // The 'todos' field is virtual (not stored in database) - it's for Prisma queries only
+  todos    Todo[]
+}
+
+// Todo Model
+// Represents a single todo item created by a user
+model Todo {
+  // Primary key with auto-increment
+  id          Int      @id @default(autoincrement())
+
+  // The actual todo text/description
+  title       String
+
+  // Whether the todo is completed or not
+  // @default(false): New todos are incomplete by default
+  completed   Boolean  @default(false)
+
+  // Foreign Key: Links this todo to a specific user
+  // This is the actual column stored in the database
+  userId      Int
+
+  // Relationship: Each todo belongs to one user
+  // @relation: Defines the relationship between Todo and User models
+  // fields: [userId] - The field in THIS model that stores the foreign key
+  // references: [id] - The field in the OTHER model (User) that this references
+  // onDelete: Cascade - If a user is deleted, automatically delete all their todos
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timestamps for tracking creation and modification
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
